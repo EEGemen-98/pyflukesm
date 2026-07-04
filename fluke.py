@@ -7,8 +7,7 @@ class Fluke:
 
     Link to Fluke Programming Reference: https://media.fluke.com/d602147f-0db6-43c4-8d91-b10800c14f4e_original%20file.pdf
 
-    Use query() for to send and read any command. I also have some preset methods for common commands like
-    measure_frequency() and measure_Vrms().
+    Use query() for to send and read any command. See "def measure...()" preset methods at the bottom. 
     """
 
     def __init__(self, port: str):
@@ -38,7 +37,7 @@ class Fluke:
         return ack
 
     def read_until_cr(self):
-        """Basically serial.readline() but looks for \r instead of \n"""
+        """FLUKE SMs use carrier return (<cr>) or \r instead of \n for new lines"""
         data = bytearray()
 
         while True:
@@ -55,9 +54,11 @@ class Fluke:
         return bytes(data)
 
     def read_record(self):
+        """Use like serial.readline()"""
         return self.read_until_cr().decode("ascii")
 
     def query(self,cmd):
+        """Useful if you want to run your own command"""
         self.send(cmd)
         ack = self.read_record()
 
@@ -73,8 +74,45 @@ class Fluke:
         if self.ser.is_open:
             self.ser.close()
 
-    def measure_frequency(self):
+    def measure_all(self):
+        """
+        Reads all available measurements in form: 
+        [[<no>,<valid>,<source>,<unit>,<type>,<pres>,<resol>], ...]
+        """
+        return self.query("QM")
+
+    def measure_reading1(self):
+        """Read measurement 1"""
+        return float(self.query("QM 11"))
+
+    def measure_reading2(self):
+        """Read measurement 2"""
         return float(self.query("QM 21"))
 
-    def measure_Vrms(self):
-        return float(self.query("QM 11"))
+    def measure_cursor1_abs_amp(self):
+        """Read cursor 1's absolute amplitude"""
+        return float(self.query("QM 31"))
+
+    def measure_cursor2_abs_amp(self):
+        """Read cursor 2's absolute amplitude"""
+        return float(self.query("QM 41"))
+
+    def measure_cursor_abs_max_amp(self):
+        """Read cursor absolute max amplitude"""
+        return float(self.query("QM 53"))
+
+    def measure_cursor_abs_avg_amp(self):
+        """Read cursor absolute average amplitude"""
+        return float(self.query("QM 54"))
+
+    def measure_cursor_abs_min_amp(self):
+        """Read cursor absolute minimum amplitude"""
+        return float(self.query("QM 55"))
+
+    def measure_cursor_rel_deltav_amp(self):
+        """Read cursor relative delta V amplitude"""
+        return float(self.query("QM 61"))
+
+    def measure_cursor_rel_deltat_amp(self):
+        """Read cursor relative delta T amplitude"""
+        return float(self.query("QM 71"))
