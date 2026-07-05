@@ -1,5 +1,22 @@
 import serial
+from enum import Enum
 from dataclasses import dataclass
+
+
+class Measurement(Enum):
+    """
+    Enums for QM <no>
+    See pg 29 in programming reference
+    """
+    READING_1 = 11
+    READING_2 = 21
+    CURSOR_1_ABS_AMP = 31
+    CURSOR_2_ABS_AMP = 41
+    CURSOR_ABS_AMP_MAX = 53
+    CURSOR_ABS_AMP_AVG = 54
+    CURSOR_ABS_AMP_MIN = 55
+    CURSOR_RELATIVE_AMP_DELTA_V = 61
+    CURSOR_RELATIVE_AMP_DELTA_T = 71
 
 @dataclass
 class MeasurementInfo:
@@ -10,6 +27,9 @@ class MeasurementInfo:
     type: int
     pres: int
     resol: float
+
+    #def __str__(self):
+     #   return f""
 
 class Fluke:
     """
