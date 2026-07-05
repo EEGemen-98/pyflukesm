@@ -1,9 +1,10 @@
 import serial
-from enum import Enum
+from enum import IntEnum
 from dataclasses import dataclass
+from typing import Union
 
 
-class Measurement(Enum):
+class Measurement(IntEnum):
     """
     Enums for QM <no>
     See pg 29 in programming reference
@@ -27,9 +28,6 @@ class MeasurementInfo:
     type: int
     pres: int
     resol: float
-
-    #def __str__(self):
-     #   return f""
 
 class Fluke:
     """
@@ -107,6 +105,8 @@ class Fluke:
 
     def measure_all(self):
         """
+        Equivalent of just sending "QM" cmd to scopemeter.
+
         Reads all available measurements in form: 
         [[<no>,<valid>,<source>,<unit>,<type>,<pres>,<resol>], ...]
 
@@ -130,39 +130,19 @@ class Fluke:
             )
 
         return res
+    
+    
+def measure(self, *measurements: Union[int, Measurement]) -> float | list[float]:
+    """
+    Sends "QM [<no>, ...]" cmd to scopemeter. 
+    Accepts int or Measurement enum as inputs.
+    Returns: Measurement value as a single float or list of float depending on input
+    """
+    ids = [int(m) for m in measurements]
 
-    def measure_reading1(self):
-        """Read measurement 1"""
-        return float(self.query("QM 11"))
+    cmd = "QM " + ",".join(map(str, ids))
+    response = self.query(cmd)
 
-    def measure_reading2(self):
-        """Read measurement 2"""
-        return float(self.query("QM 21"))
+    values = [float(v) for v in response.split(",")]
 
-    def measure_cursor1_abs_amp(self):
-        """Read cursor 1's absolute amplitude"""
-        return float(self.query("QM 31"))
-
-    def measure_cursor2_abs_amp(self):
-        """Read cursor 2's absolute amplitude"""
-        return float(self.query("QM 41"))
-
-    def measure_cursor_abs_max_amp(self):
-        """Read cursor absolute max amplitude"""
-        return float(self.query("QM 53"))
-
-    def measure_cursor_abs_avg_amp(self):
-        """Read cursor absolute average amplitude"""
-        return float(self.query("QM 54"))
-
-    def measure_cursor_abs_min_amp(self):
-        """Read cursor absolute minimum amplitude"""
-        return float(self.query("QM 55"))
-
-    def measure_cursor_rel_deltav_amp(self):
-        """Read cursor relative delta V amplitude"""
-        return float(self.query("QM 61"))
-
-    def measure_cursor_rel_deltat_amp(self):
-        """Read cursor relative delta T amplitude"""
-        return float(self.query("QM 71"))
+    return values[0] if len(values) == 1 else values
