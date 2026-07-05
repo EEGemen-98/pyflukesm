@@ -1,5 +1,15 @@
 import serial
 
+@dataclass
+class MeasurementInfo:
+    no: int
+    valid: int
+    source: int
+    unit: int
+    type: int
+    pres: int
+    resol: int
+
 class Fluke:
     """
     Simple FLUKE 190 series ScopeMeter Python Control API
