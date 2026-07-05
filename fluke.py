@@ -1,4 +1,5 @@
 import serial
+from dataclasses import dataclass
 
 @dataclass
 class MeasurementInfo:
@@ -8,7 +9,7 @@ class MeasurementInfo:
     unit: int
     type: int
     pres: int
-    resol: int
+    resol: float
 
 class Fluke:
     """
@@ -88,8 +89,27 @@ class Fluke:
         """
         Reads all available measurements in form: 
         [[<no>,<valid>,<source>,<unit>,<type>,<pres>,<resol>], ...]
+
+        Returns: [MeasurementInfo, ...]
         """
-        return self.query("QM")
+        data = self.query("QM").split(',')
+        print(data)
+
+        res = []
+        for i in range(0, len(data), 7):
+            res.append(
+                MeasurementInfo(
+                    int(data[i]), 
+                    int(data[i+1]), 
+                    int(data[i+2]), 
+                    int(data[i+3]), 
+                    int(data[i+4]), 
+                    int(data[i+5]), 
+                    float(data[i+6])
+                )
+            )
+
+        return res
 
     def measure_reading1(self):
         """Read measurement 1"""
