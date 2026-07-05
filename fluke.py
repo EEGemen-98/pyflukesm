@@ -29,6 +29,18 @@ class MeasurementInfo:
     pres: int
     resol: float
 
+class FlukeSyntaxError(Exception):
+    pass
+
+class FlukeExecutionError(Exception):
+    pass
+
+class FlukeSynchronizationError(Exception):
+    pass
+
+class FlukeCommunicationError(Exception):
+    pass
+
 class Fluke:
     """
     Simple FLUKE 190 series ScopeMeter Python Control API
@@ -61,8 +73,16 @@ class Fluke:
         self.ser.write(packet)
 
     def read_ack(self):
-        ack = self.ser.readline()
-        print("ACK:", repr(ack))
+        ack = self.read_until_cr().decode("ascii")
+        if ack == "1":
+            raise FlukeSyntaxError(f"Ack returned {ack}: Syntax Error. Check your command syntax.")
+        elif ack == "2":
+            raise FlukeExecutionError(f"Ack returned {ack}: Execution Error. Data may be out of range or conflicting instrument settings")
+        elif ack == "3":
+            raise FlukeSynchronizationError(f"Ack returned {ack}: Synchronization Error.")
+        elif ack == "4":
+            raise FlukeCommunicationError(f"Ack returned {ack}: Communication Error.")
+
         return ack
 
     def read_until_cr(self):
@@ -89,10 +109,7 @@ class Fluke:
     def query(self,cmd):
         """Useful if you want to run your own command"""
         self.send(cmd)
-        ack = self.read_record()
-
-        if ack != "0":
-            raise Exception(f"Scope returned ACK {ack}")
+        ack = self.read_ack()
         
         return self.read_record()
 
@@ -113,7 +130,6 @@ class Fluke:
         Returns: [MeasurementInfo, ...]
         """
         data = self.query("QM").split(',')
-        print(data)
 
         res = []
         for i in range(0, len(data), 7):
@@ -131,18 +147,17 @@ class Fluke:
 
         return res
     
-    
-def measure(self, *measurements: Union[int, Measurement]) -> float | list[float]:
-    """
-    Sends "QM [<no>, ...]" cmd to scopemeter. 
-    Accepts int or Measurement enum as inputs.
-    Returns: Measurement value as a single float or list of float depending on input
-    """
-    ids = [int(m) for m in measurements]
+    def measure(self, *measurements: Union[int, Measurement]) -> float | list[float]:
+        """
+        Sends "QM [<no>, ...]" cmd to scopemeter. 
+        Accepts int or Measurement enum as inputs.
+        Returns: Measurement value as a single float or list of float depending on input
+        """
+        ids = [int(m) for m in measurements]
 
-    cmd = "QM " + ",".join(map(str, ids))
-    response = self.query(cmd)
+        cmd = "QM " + ",".join(map(str, ids))
+        response = self.query(cmd)
 
-    values = [float(v) for v in response.split(",")]
+        values = [float(v) for v in response.split(",")]
 
-    return values[0] if len(values) == 1 else values
+        return values[0] if len(values) == 1 else values
