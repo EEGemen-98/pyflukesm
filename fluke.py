@@ -1,26 +1,11 @@
 import serial
-from enum import IntEnum
 from dataclasses import dataclass
 from typing import Union
+import flukeenums as fle
 
-
-class Measurement(IntEnum):
-    """
-    Enums for QM <no>
-    See pg 29 in programming reference
-    """
-    READING_1 = 11
-    READING_2 = 21
-    CURSOR_1_ABS_AMP = 31
-    CURSOR_2_ABS_AMP = 41
-    CURSOR_ABS_AMP_MAX = 53
-    CURSOR_ABS_AMP_AVG = 54
-    CURSOR_ABS_AMP_MIN = 55
-    CURSOR_RELATIVE_AMP_DELTA_V = 61
-    CURSOR_RELATIVE_AMP_DELTA_T = 71
 
 @dataclass
-class MeasurementInfo:
+class MeasurementInfo():
     no: int
     valid: int
     source: int
@@ -28,6 +13,16 @@ class MeasurementInfo:
     type: int
     pres: int
     resol: float
+
+    def __str__(self):
+        if self.valid != 1:
+            return "Invalid measurement."
+        
+        return (
+            f"{self.no.label}: {self.resol} "
+            f"{self.unit.label} {self.type.name.replace('_', ' ')} "
+            f"from {self.source.label} ({self.pres.name})"
+        )
 
 class FlukeSyntaxError(Exception):
     pass
@@ -120,34 +115,42 @@ class Fluke:
         if self.ser.is_open:
             self.ser.close()
 
-    def measure_all(self):
+    def measure_all(self, mode):
         """
-        Equivalent of just sending "QM" cmd to scopemeter.
+        Equivalent of sending just "QM" cmd to scopemeter.
 
         Reads all available measurements in form: 
         [[<no>,<valid>,<source>,<unit>,<type>,<pres>,<resol>], ...]
 
+        Args: mode (str) Pass either "scope", "meter", or "trend"
         Returns: [MeasurementInfo, ...]
         """
         data = self.query("QM").split(',')
+
+        mode_to_measurement = {
+            "scope": fle.ScopeMeasurement,
+            "meter": fle.MeterMeasurement,
+            "trend": fle.TrendMeasurement,
+        }[mode]
 
         res = []
         for i in range(0, len(data), 7):
             res.append(
                 MeasurementInfo(
-                    int(data[i]), 
-                    int(data[i+1]), 
-                    int(data[i+2]), 
-                    int(data[i+3]), 
-                    int(data[i+4]), 
-                    int(data[i+5]), 
+                    mode_to_measurement(int(data[i])), 
+                    fle.MeasurementValidity(int(data[i+1])), 
+                    fle.MeasurementSource(int(data[i+2])), 
+                    fle.MeasurementUnit(int(data[i+3])), 
+                    fle.MeasurementType(int(data[i+4])), 
+                    fle.MeasurementPresentation(int(data[i+5])), 
                     float(data[i+6])
                 )
             )
 
         return res
     
-    def measure(self, *measurements: Union[int, Measurement]) -> float | list[float]:
+    # FIX: Determine mode before measurement enum usage
+    def measure(self, *measurements: Union[int, fle.Measurement]) -> float | list[float]:
         """
         Sends "QM [<no>, ...]" cmd to scopemeter. 
         Accepts int or Measurement enum as inputs.
