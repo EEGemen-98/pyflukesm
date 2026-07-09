@@ -149,7 +149,6 @@ class Fluke:
 
         return res
     
-    # FIX: Determine mode before measurement enum usage
     def measure(self, *measurements: Union[int, fle.Measurement]) -> float | list[float]:
         """
         Sends "QM [<no>, ...]" cmd to scopemeter. 
