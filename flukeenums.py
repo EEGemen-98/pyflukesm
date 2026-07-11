@@ -1,4 +1,6 @@
 from enum import IntEnum
+from typing import Union
+
 
 """
     Enums for QM codes
@@ -42,7 +44,7 @@ class TrendMeasurement(IntEnum):
     TREND_READING_1 = 11
     TREND_READING_2 = 21
 
-
+Measurement = Union[ScopeMeasurement, MeterMeasurement, TrendMeasurement]
 
 class MeasurementValidity(IntEnum):
     INVALID = 0
