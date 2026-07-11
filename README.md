@@ -1,6 +1,6 @@
 ﻿# pyflukesm
 
-Simple and easy to use Python API for controlling the FLUKE 190 series ScopeMeter over a serial connection.
+Simple and easy to use Python driver for controlling the FLUKE 190 series ScopeMeter over a serial connection.
 
 Solo project, WIP. So far measurement queries are working, see usage below.
 
