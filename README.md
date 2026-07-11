@@ -6,6 +6,8 @@ Solo project, WIP. So far measurement queries are working, see usage below.
 
 FLUKE Programming Guide: https://media.fluke.com/d602147f-0db6-43c4-8d91-b10800c14f4e_original%20file.pdf
 
+(I'm not affiliated with FLUKE in any way. Just doing this for fun.)
+
 ## Installation
 
 Requires [pyserial](https://pypi.org/project/pyserial/):
