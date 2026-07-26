@@ -190,3 +190,16 @@ class MeasurementPresentation(IntEnum):
     LINEAR = 3
     FAHRENHEIT = 4
     CELSIUS = 5
+
+
+class PrintFormat(IntEnum):
+    """
+    Output formats for the QP (Query Print) command.
+    See pg 34 in programming reference.
+    """
+    EPSON = 0        # Epson FX/LQ compatible; 1:1 on 190-series, 4:3 on 190C-series/190-series-II
+    LASERJET = 1     # 190-series only; 4:3
+    DESKJET = 2      # 190-series only; 4:3
+    POSTSCRIPT = 3   # 190-series only; 4:3
+    PNG = 11         # 190C-series only; block transfer mandatory; 4:3
+    FBRLE2D = 12     # 199C-series color palette based compressed image; 4:3
