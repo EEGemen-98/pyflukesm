@@ -2,3 +2,4 @@ __pycache__/
 fluke-programming-reference.pdf
 sandbox.py
 .pytest_cache/
+.DS_Store
